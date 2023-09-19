@@ -22,7 +22,7 @@ To use Employee Tracker, follow these steps:
 
    ```bash
    [git clone https://github.com/JadenMerzetti/Segui-gli-Impiegati-La-Missione-Tracking.git
-   Usage
+
 -----
 
 Once you've installed and configured the application, you can use it to:
