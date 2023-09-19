@@ -154,7 +154,7 @@ connection.connect((err) => {
         const salary = parseFloat(answers.salary);
         const roles_department = parseInt(answers.roles_department);
   
-        const query = 'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)';
+        const query = 'INSERT INTO role (title, salary, roles_department) VALUES (?, ?, ?)';
         connection.query(query, [title, salary, roles_department], (err, result) => {
           if (err) {
             console.error('Error adding role:', err);
@@ -202,20 +202,20 @@ function addEmployee() {
         },
       ])
       .then((answers) => {
-        const firstName = answers.firstName;
-        const lastName = answers.lastName;
-        const jobTitle = answers.jobTitle;
-        const salary = parseInt(answers.salary);
-        const employeeManager = answers.employeeManager;
+        const first_Name = answers.firstName;
+        const last_Name = answers.lastName;
+        const job_Title = answers.jobTitle;
+        const employee_salary = parseInt(answers.salary);
+        const employee_Manager = answers.employeeManager;
         const department = answers.department;
        
-        const query = 'INSERT INTO employee (firstName, lastName, jobTitle, salary, employeeManager, department) VALUES (?, ?, ?, ?, ?, ?)';
-        connection.query(query, [firstName, lastName, jobTitle, salary, employeeManager, department], (err, result) => {
+        const query = 'INSERT INTO employee (first_Name, last_Name, job_Title, employee_salary, employee_Manager, department) VALUES (?, ?, ?, ?, ?, ?)';
+        connection.query(query, [first_Name, last_Name, job_Title, employee_salary, employee_Manager, department], (err, result) => {
           if (err) {
             console.error('Error adding employee:', err);
             startApp(); 
           } else {
-            console.log(`Employee '${firstName} ${lastName}' added successfully.`);
+            console.log(`Employee '${first_Name} ${last_Name}' added successfully.`);
             startApp(); 
           }
         });
@@ -223,32 +223,48 @@ function addEmployee() {
   }
 
   function updateEmployeeRole() {
-    inquirer
-      .prompt([
-        {
-          type: 'input',
-          name: 'newEmployeeId',
-          message: 'Enter the ID of the employee to update:',
-        },
-        {
-          type: 'input',
-          name: 'newTitle',
-          message: 'Enter the ID of the new role for the employee:',
-        },
-      ])
-      .then((answers) => {
-        const newEmployeeId = parseInt(answers.newEmployeeId);
-        const newTitle = parseInt(answers.newTitle);
-        const query = 'UPDATE employees SET employee_id, job_title = ? WHERE id = ?';
-        connection.query(query, [newEmployeeId, newTitle], (err, result) => {
-          if (err) {
-            console.error('Error updating employee role:', err);
-          } else {
-            console.log('Employee role updated successfully.');
-          }
-          startApp();
+    connection.query('SELECT employee_id, CONCAT(first_name, " ", last_name) AS fullName FROM employee', (err, employees) => {
+      if (err) {
+        console.error('Error fetching employees:', err);
+        startApp();
+        return;
+      }
+  
+      const employeeChoices = employees.map((employee) => ({
+        name: `${employee.fullName} (ID: ${employee.employee_id})`,
+        value: employee.employee_id,
+      }));
+  
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'employeeId',
+            message: 'Select the employee to update:',
+            choices: employeeChoices,
+          },
+          {
+            type: 'input',
+            name: 'newTitle',
+            message: 'Enter the new title for the selected employee:',
+          },
+        ])
+        .then((answers) => {
+          const employeeId = parseInt(answers.employeeId);
+          const newTitle = answers.newTitle;
+          const query = 'UPDATE employee SET job_Title = ? WHERE employee_id = ?';
+          connection.query(query, [newTitle, employeeId], (err, result) => {
+            if (err) {
+              console.error('Error updating employee role:', err);
+            } else {
+              console.log('Employee role updated successfully.');
+            }
+            startApp();
+          });
         });
-      });
+    });
   }
+  
+  
   
   
