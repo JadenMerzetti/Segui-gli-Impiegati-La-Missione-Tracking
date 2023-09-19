@@ -1,15 +1,16 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql');
 const connection = mysql.createConnection({
-  host: 'placeholder',
-  user: 'placeholder',
-  password: 'placeholder',
-  database: 'Employee_Tracker',
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: 'Juljad131313!',
+  database: 'employee_Tracker',
 });
 
 connection.connect((err) => {
     if (err) throw err;
-    console.log('Connected to MySQL database: Employee_Tracker');
+    console.log('Connected to MySQL database: employee_Tracker');
     startApp();
   });
 
@@ -44,7 +45,7 @@ connection.connect((err) => {
             case 'Add a department':
             addDepartment();
             break;
-            case `add a role`:
+            case `Add a role`:
             addRole();
             break;
             case 'Add an employee':
@@ -58,7 +59,7 @@ connection.connect((err) => {
   }
   
   function viewAllDepartments() {
-    const query = 'SELECT * FROM department';
+    const query = 'SELECT * FROM department;'
     connection.query(query, (err, res) => {
       if (err) throw err;
       console.table(res);
@@ -67,7 +68,7 @@ connection.connect((err) => {
   }
 
   function viewAllRoles() {
-    const query = 'SELECT role.id, role.title, role.salary, department.name AS department FROM role INNER JOIN department ON role.department_id = department.id';
+    const query = `SELECT * FROM role;` 
     connection.query(query, (err, res) => {
       if (err) {
         console.error('Error fetching roles:', err);
@@ -81,22 +82,7 @@ connection.connect((err) => {
   }
 
   function viewAllEmployees() {
-    const query = `
-      SELECT
-        employee.id,
-        employee.first_name,
-        employee.last_name,
-        role.title AS job_title,
-        department.name AS department,
-        role.salary,
-        CONCAT(manager.first_name, ' ', manager.last_name) AS manager
-      FROM
-        employee
-      LEFT JOIN role ON employee.role_id = role.id
-      LEFT JOIN department ON role.department_id = department.id
-      LEFT JOIN employee manager ON employee.manager_id = manager.id
-    `;
-  
+    const query = `SELECT * FROM employee;`
     connection.query(query, (err, res) => {
       if (err) {
         console.error('Error fetching employees:', err);
@@ -109,29 +95,77 @@ connection.connect((err) => {
     });
   }
 
-function addDepartment() {
-  inquirer
-    .prompt([
-      {
-        type: 'input',
-        name: 'departmentName',
-        message: 'Enter the name of the new department:',
-      },
-    ])
-    .then((answer) => {
-      const departmentName = answer.departmentName;
-      const query = 'INSERT INTO department (name) VALUES (?)';
-      connection.query(query, [departmentName], (err, result) => {
-        if (err) {
-          console.error('Error adding department:', err);
-          startApp(); 
-        } else {
-          console.log(`Department '${departmentName}' added successfully.`);
-          startApp(); 
-        }
+  function addDepartment() {
+    inquirer
+      .prompt([
+        {
+          type: 'input',
+          name: 'departmentName',
+          message: 'Enter the name of the new department:',
+        },
+      ])
+      .then((answer) => {
+        const departmentName = answer.departmentName;
+        inquirer
+          .prompt([
+            {
+              type: 'input',
+              name: 'departmentId',
+              message: 'Enter the department ID for the new department:',
+            },
+          ])
+          .then((answer) => {
+            const departmentId = parseInt(answer.departmentId);
+            const query = 'INSERT INTO department (name,  department_id) VALUES (?, ?)';
+            connection.query(query, [departmentName, departmentId], (err, result) => {
+              if (err) {
+                console.error('Error adding department:', err);
+                startApp(); 
+              } else {
+                console.log(`Department '${departmentName}' with ID '${departmentId}' added successfully.`);
+                startApp(); 
+              }
+            });
+          });
       });
-    });
-}
+  }
+
+  function addRole() {
+    inquirer
+      .prompt([
+        {
+          type: 'input',
+          name: 'title',
+          message: "Enter the title of the new role:",
+        },
+        {
+          type: 'input',
+          name: 'salary',
+          message: "Enter the salary for the new role:",
+        },
+        {
+          type: 'input',
+          name: 'roles_department',
+          message: "Enter the department ID for the new role:",
+        },
+      ])
+      .then((answers) => {
+        const title = answers.title;
+        const salary = parseFloat(answers.salary);
+        const roles_department = parseInt(answers.roles_department);
+  
+        const query = 'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)';
+        connection.query(query, [title, salary, roles_department], (err, result) => {
+          if (err) {
+            console.error('Error adding role:', err);
+            startApp(); 
+          } else {
+            console.log(`Role '${title}' added successfully.`);
+            startApp(); 
+          }
+        });
+      });
+  }
 
 function addEmployee() {
     inquirer
@@ -148,24 +182,35 @@ function addEmployee() {
         },
         {
           type: 'input',
-          name: 'roleId',
-          message: "Enter the employee's role ID:",
+          name: 'jobTitle',
+          message: "Enter the employee's job title:",
         },
         {
           type: 'input',
-          name: 'managerId',
-          message: "Enter the employee's manager's ID (if applicable):",
+          name: 'salary',
+          message: "Enter the employee's yearly salary:",
+        },
+        {
+          type: 'input',
+          name: 'employeeManager',
+          message: "Enter the employee's manager:",
+        },
+        {
+          type: 'input',
+          name: 'department',
+          message: "Enter the employee's department:",
         },
       ])
       .then((answers) => {
         const firstName = answers.firstName;
         const lastName = answers.lastName;
-        const roleId = parseInt(answers.roleId);
-        const managerId = parseInt(answers.managerId) || null;
-  
+        const jobTitle = answers.jobTitle;
+        const salary = parseInt(answers.salary);
+        const employeeManager = answers.employeeManager;
+        const department = answers.department;
        
-        const query = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)';
-        connection.query(query, [firstName, lastName, roleId, managerId], (err, result) => {
+        const query = 'INSERT INTO employee (firstName, lastName, jobTitle, salary, employeeManager, department) VALUES (?, ?, ?, ?, ?, ?)';
+        connection.query(query, [firstName, lastName, jobTitle, salary, employeeManager, department], (err, result) => {
           if (err) {
             console.error('Error adding employee:', err);
             startApp(); 
@@ -177,63 +222,25 @@ function addEmployee() {
       });
   }
 
-  function addRole() {
-    inquirer
-      .prompt([
-        {
-          type: 'input',
-          name: 'title',
-          message: 'Enter the title of the new role:',
-        },
-        {
-          type: 'input',
-          name: 'salary',
-          message: 'Enter the salary for the new role:',
-        },
-        {
-          type: 'input',
-          name: 'departmentId',
-          message: 'Enter the department ID for the new role:',
-        },
-      ])
-      .then((answers) => {
-        const title = answers.title;
-        const salary = parseFloat(answers.salary);
-        const departmentId = parseInt(answers.departmentId);
-  
-     
-        const query = 'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)';
-        connection.query(query, [title, salary, departmentId], (err, result) => {
-          if (err) {
-            console.error('Error adding role:', err);
-            startApp(); 
-          } else {
-            console.log(`Role '${title}' added successfully.`);
-            startApp(); 
-          }
-        });
-      });
-  }
-
   function updateEmployeeRole() {
     inquirer
       .prompt([
         {
           type: 'input',
-          name: 'employeeId',
+          name: 'newEmployeeId',
           message: 'Enter the ID of the employee to update:',
         },
         {
           type: 'input',
-          name: 'newRoleId',
+          name: 'newTitle',
           message: 'Enter the ID of the new role for the employee:',
         },
       ])
       .then((answers) => {
-        const employeeId = parseInt(answers.employeeId);
-        const newRoleId = parseInt(answers.newRoleId);
-        const query = 'UPDATE employees SET role_id = ? WHERE id = ?';
-        connection.query(query, [newRoleId, employeeId], (err, result) => {
+        const newEmployeeId = parseInt(answers.newEmployeeId);
+        const newTitle = parseInt(answers.newTitle);
+        const query = 'UPDATE employees SET employee_id, job_title = ? WHERE id = ?';
+        connection.query(query, [newEmployeeId, newTitle], (err, result) => {
           if (err) {
             console.error('Error updating employee role:', err);
           } else {
