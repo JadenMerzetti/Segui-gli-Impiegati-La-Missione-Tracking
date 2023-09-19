@@ -21,7 +21,7 @@ To use Employee Tracker, follow these steps:
 1. Clone this repository to your local machine:
 
    ```bash
-   [git clone https://github.com/JadenMerzetti/Segui-gli-Impiegati-La-Missione-Tracking.git
+   git clone https://github.com/JadenMerzetti/Segui-gli-Impiegati-La-Missione-Tracking.git
 
 -----
 
