@@ -1,4 +1,5 @@
 # Employee Tracker
+![SS](https://github.com/JadenMerzetti/Segui-gli-Impiegati-La-Missione-Tracking/assets/131717483/19e0432e-3e05-481a-8632-c8a0bb003594)
 
 ## Demo Video Link
 https://drive.google.com/file/d/1r_8qWKbZ6xfUhUy2lkxahF86xX7Za4Gt/view
